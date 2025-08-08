@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Split - Group Expense Tracker</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700&family=Inter:wght@400;500;600&family=Luckiest+Guy&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <!-- Animate.css -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <!-- AOS (Animate On Scroll) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css">
+    <!-- SweetAlert2 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Navigation -->
+        <nav class="main-nav">
+            <div class="logo">Smart Split</div>
+            <ul class="nav-links">
+                <li><a href="#" class="active" data-page="dashboard"><i class="fas fa-home"></i> Home</a></li>
+                <li><a href="#" data-page="people"><i class="fas fa-users"></i> People</a></li>
+                <li><a href="#" data-page="expenses"><i class="fas fa-receipt"></i> Expenses</a></li>
+                <li><a href="#" data-page="summary"><i class="fas fa-chart-pie"></i> Summary</a></li>
+                <li><a href="#" data-page="settings"><i class="fas fa-cog"></i> Settings</a></li>
+            </ul>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="content">
+            <!-- Dashboard Page -->
+            <section id="dashboard" class="page active">
+                <div class="page-header">
+                    <h1 class="animate__animated animate__bounceIn">Dashboard</h1>
+                </div>
+                
+                <div class="balance-card" data-aos="fade-up">
+                    <h2>Total Balance</h2>
+                    <div class="balance-amount">$0.00</div>
+                </div>
+                
+                <div class="action-buttons">
+                    <button class="btn btn-primary" id="add-expense-btn">
+                        <i class="fas fa-plus"></i> Add Expense 💸
+                    </button>
+                    <button class="btn btn-secondary" id="settle-up-btn">
+                        <i class="fas fa-handshake"></i> Settle Up 🤝
+                    </button>
+                </div>
+                
+                <div class="recent-expenses">
+                    <h2>Recent Expenses</h2>
+                    <div class="expense-cards" id="recent-expenses-list">
+                        <!-- Expenses will be populated here -->
+                        <div class="empty-state">
+                            <i class="fas fa-receipt fa-3x"></i>
+                            <p>No expenses yet! Add your first expense.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- People Page -->
+            <section id="people" class="page">
+                <div class="page-header">
+                    <h1 class="animate__animated animate__bounceIn">People</h1>
+                </div>
+                
+                <div class="action-buttons">
+                    <button class="btn btn-primary" id="add-person-btn">
+                        <i class="fas fa-user-plus"></i> Add Person
+                    </button>
+                </div>
+                
+                <div class="people-list" id="people-list">
+                    <!-- People will be populated here -->
+                    <div class="empty-state">
+                        <i class="fas fa-users fa-3x"></i>
+                        <p>No people added yet! Add someone to get started.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Expenses Page -->
+            <section id="expenses" class="page">
+                <div class="page-header">
+                    <h1 class="animate__animated animate__bounceIn">Expenses</h1>
+                </div>
+                
+                <div class="action-buttons">
+                    <button class="btn btn-primary" id="add-expense-btn-2">
+                        <i class="fas fa-plus"></i> Add Expense
+                    </button>
+                </div>
+                
+                <div class="expenses-list" id="expenses-list">
+                    <!-- Expenses will be populated here -->
+                    <div class="empty-state">
+                        <i class="fas fa-receipt fa-3x"></i>
+                        <p>No expenses yet! Add your first expense.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Summary Page -->
+            <section id="summary" class="page">
+                <div class="page-header">
+                    <h1 class="animate__animated animate__bounceIn">Summary</h1>
+                </div>
+                
+                <div class="summary-chart-container" data-aos="zoom-in">
+                    <canvas id="summary-chart"></canvas>
+                </div>
+                
+                <div class="settlement-summary" id="settlement-summary">
+                    <!-- Settlement info will be populated here -->
+                    <div class="empty-state">
+                        <i class="fas fa-chart-pie fa-3x"></i>
+                        <p>Add some expenses to see your summary!</p>
+                    </div>
+                </div>
+                
+                <div class="action-buttons">
+                    <button class="btn btn-primary" id="settle-all-btn">
+                        <i class="fas fa-handshake"></i> Settle All Debts
+                    </button>
+                </div>
+            </section>
+
+            <!-- Settings Page -->
+            <section id="settings" class="page">
+                <div class="page-header">
+                    <h1 class="animate__animated animate__bounceIn">Settings</h1>
+                </div>
+                
+                <div class="settings-options">
+                    <div class="setting-card" data-aos="fade-up">
+                        <h3><i class="fas fa-file-export"></i> Export/Import Data</h3>
+                        <p>Backup or restore your Smart Split data</p>
+                        <div class="setting-actions">
+                            <button class="btn btn-secondary" id="export-data-btn">Export Data</button>
+                            <button class="btn btn-secondary" id="import-data-btn">Import Data</button>
+                        </div>
+                    </div>
+                    
+                    <div class="setting-card" data-aos="fade-up" data-aos-delay="100">
+                        <h3><i class="fas fa-trash"></i> Clear Data</h3>
+                        <p>Remove all expenses and people data</p>
+                        <div class="setting-actions">
+                            <button class="btn btn-danger" id="clear-data-btn">Clear All Data</button>
+                        </div>
+                    </div>
+                    
+                    <div class="setting-card" data-aos="fade-up" data-aos-delay="200">
+                        <h3><i class="fas fa-redo"></i> Reset App</h3>
+                        <p>Reset the app to its initial state</p>
+                        <div class="setting-actions">
+                            <button class="btn btn-danger" id="reset-app-btn">Reset App</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <!-- Add Expense Modal -->
+    <div class="modal" id="add-expense-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add New Expense 💸</h2>
+                <span class="close-modal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="add-expense-form">
+                    <div class="form-group">
+                        <label for="expense-description">Description</label>
+                        <input type="text" id="expense-description" placeholder="What was this for?" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="expense-amount">Amount</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-dollar-sign"></i>
+                            <input type="number" id="expense-amount" min="0.01" step="0.01" placeholder="0.00" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="expense-payer">Paid by</label>
+                        <select id="expense-payer" required>
+                            <!-- Will be populated with people -->
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Split between</label>
+                        <div id="expense-split-people" class="checkbox-group">
+                            <!-- Will be populated with people -->
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="expense-date">Date</label>
+                        <input type="date" id="expense-date" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="expense-category">Category</label>
+                        <select id="expense-category">
+                            <option value="food">Food & Drinks 🍔</option>
+                            <option value="transportation">Transportation 🚗</option>
+                            <option value="entertainment">Entertainment 🎬</option>
+                            <option value="shopping">Shopping 🛍️</option>
+                            <option value="utilities">Utilities 💡</option>
+                            <option value="other">Other 🤷</option>
+                        </select>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">Save Expense</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Person Modal -->
+    <div class="modal" id="add-person-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add New Person 👤</h2>
+                <span class="close-modal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="add-person-form">
+                    <div class="form-group">
+                        <label for="person-name">Name</label>
+                        <input type="text" id="person-name" placeholder="Enter name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="person-emoji">Choose an emoji</label>
+                        <div class="emoji-picker" id="emoji-picker">
+                            <span data-emoji="😀">😀</span>
+                            <span data-emoji="😎">😎</span>
+                            <span data-emoji="🤠">🤠</span>
+                            <span data-emoji="🧐">🧐</span>
+                            <span data-emoji="🤑">🤑</span>
+                            <span data-emoji="😇">😇</span>
+                            <span data-emoji="🥳">🥳</span>
+                            <span data-emoji="🤩">🤩</span>
+                        </div>
+                        <input type="hidden" id="person-emoji" value="😀" required>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">Add Person</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Import Data Modal -->
+    <div class="modal" id="import-data-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Import Data</h2>
+                <span class="close-modal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="import-data-form">
+                    <div class="form-group">
+                        <label for="import-data">Paste your JSON data below</label>
+                        <textarea id="import-data" rows="10" placeholder="Paste your exported JSON data here" required></textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">Import Data</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
+    
+    <!-- Custom JavaScript -->
+    <script src="js/sounds.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/data.js"></script>
+</body>
+</html>

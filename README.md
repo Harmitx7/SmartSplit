@@ -78,7 +78,7 @@ Smart Split uses a neo-brutalist and cartoon-core visual style to make expense t
 
 ## 📝 License
 
-This project is open source and available under the MIT License.
+This project is open source you can steal it legally, break it gloriously, and still blame us for nothing.
 
 ## 🙏 Acknowledgements
 

@@ -26,14 +26,13 @@ const UI = {
     
     // Show a specific page
     showPage(pageId) {
-        // Hide all pages
-        document.querySelectorAll('.page').forEach(page => {
-            page.classList.remove('active');
-        });
-        
-        // Show selected page
-        document.getElementById(pageId).classList.add('active');
-        
+        const newPage = document.getElementById(pageId);
+        const currentPage = document.querySelector('.page.active');
+
+        if (newPage === currentPage) {
+            return; // Don't do anything if the page is already active
+        }
+
         // Update active nav link
         document.querySelectorAll('.nav-links a').forEach(link => {
             link.classList.remove('active');
@@ -41,16 +40,37 @@ const UI = {
                 link.classList.add('active');
             }
         });
-        
-        // Animate page header
-        const header = document.querySelector(`#${pageId} .page-header h1`);
-        header.classList.remove('animate__bounceIn');
-        setTimeout(() => {
-            header.classList.add('animate__bounceIn');
-        }, 10);
-        
-        // Refresh AOS animations
-        AOS.refresh();
+
+        const showNewPage = () => {
+            // Make new page active
+            newPage.classList.add('active', 'page-fade-in');
+
+            // Animate page header
+            const header = newPage.querySelector('.page-header h1');
+            if (header) {
+                header.classList.remove('animate__bounceIn');
+                void header.offsetWidth; // Trigger reflow
+                header.classList.add('animate__bounceIn');
+            }
+
+            // Refresh AOS animations
+            AOS.refresh();
+
+            // Clean up animation class
+            setTimeout(() => {
+                newPage.classList.remove('page-fade-in');
+            }, 500);
+        };
+
+        if (currentPage) {
+            currentPage.classList.add('page-fade-out');
+            setTimeout(() => {
+                currentPage.classList.remove('active', 'page-fade-out');
+                showNewPage();
+            }, 400); // Match animation duration
+        } else {
+            showNewPage();
+        }
     },
     
     // Show a modal

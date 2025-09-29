@@ -9,6 +9,18 @@
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `users`
+--
+
+CREATE TABLE `users` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `username` varchar(255) NOT NULL UNIQUE,
+  `password` varchar(255) NOT NULL,
+  `email` varchar(255) NOT NULL UNIQUE,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
 -- Table structure for table `people`
 --
 
@@ -16,7 +28,10 @@ CREATE TABLE `people` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL,
   `emoji` varchar(16) NOT NULL,
-  PRIMARY KEY (`id`)
+  `userId` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `userId` (`userId`),
+  CONSTRAINT `people_ibfk_1` FOREIGN KEY (`userId`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
@@ -35,7 +50,10 @@ CREATE TABLE `expenses` (
   `splitBetween` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
   `splitAmount` decimal(10,2) NOT NULL,
   `timestamp` bigint(20) NOT NULL,
+  `userId` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `payerId` (`payerId`),
-  CONSTRAINT `expenses_ibfk_1` FOREIGN KEY (`payerId`) REFERENCES `people` (`id`) ON DELETE CASCADE
+  KEY `userId` (`userId`),
+  CONSTRAINT `expenses_ibfk_1` FOREIGN KEY (`payerId`) REFERENCES `people` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `expenses_ibfk_2` FOREIGN KEY (`userId`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

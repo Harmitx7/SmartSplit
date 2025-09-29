@@ -26,6 +26,15 @@ const App = {
 
     // Initialize the app
     async init() {
+        // Display username from session storage
+        const username = sessionStorage.getItem('username');
+        if (username) {
+            const usernameDisplay = document.getElementById('username-display');
+            if (usernameDisplay) {
+                usernameDisplay.textContent = username;
+            }
+        }
+
         // Load data from the server
         await this.loadData();
 
@@ -46,6 +55,10 @@ const App = {
     async loadData() {
         try {
             const response = await fetch('php/api.php?action=get_data');
+            if (response.status === 401) {
+                window.location.href = 'login.html';
+                return;
+            }
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
@@ -173,6 +186,41 @@ const App = {
         });
         document.getElementById('clear-data-btn').addEventListener('click', () => this.clearData());
         document.getElementById('reset-app-btn').addEventListener('click', () => this.resetApp());
+
+        // Logout Button
+        const logoutBtn = document.getElementById('logout-btn');
+        if(logoutBtn) {
+            logoutBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.logout();
+            });
+        }
+
+        // Hamburger Menu Toggle
+        const navToggle = document.querySelector('.nav-toggle');
+        if (navToggle) {
+            navToggle.addEventListener('click', () => {
+                const navLinks = document.querySelector('.nav-links');
+                navLinks.classList.toggle('nav-open');
+                navToggle.classList.toggle('nav-open');
+            });
+        }
+    },
+
+    // Logout the user
+    async logout() {
+        try {
+            const response = await fetch('php/api.php?action=logout');
+            const data = await response.json();
+            if (data.success) {
+                sessionStorage.removeItem('username');
+                window.location.href = 'login.html';
+            }
+        } catch (error) {
+            console.error('Logout failed:', error);
+            // Even if server fails, force redirect
+            window.location.href = 'login.html';
+        }
     },
 
     // Render all data

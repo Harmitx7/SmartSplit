@@ -20,16 +20,44 @@
     <link rel="stylesheet" href="CSS/style.css">
 </head>
 <body>
+    <script>
+        // Redirect to login if not authenticated
+        fetch('php/api.php?action=check_auth')
+            .then(response => {
+                if (!response.ok) {
+                    window.location.href = 'login.html';
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (!data.loggedin) {
+                    window.location.href = 'login.html';
+                } else {
+                    sessionStorage.setItem('username', data.username);
+                    document.getElementById('username-display').textContent = data.username;
+                }
+            })
+            .catch(() => {
+                window.location.href = 'login.html';
+            });
+    </script>
     <div class="app-container">
         <!-- Navigation -->
         <nav class="main-nav">
             <div class="logo">Smart Split</div>
+            <div class="user-info">
+                Welcome, <span id="username-display">guest</span>
+            </div>
+            <button class="nav-toggle" aria-label="toggle navigation">
+                <span class="hamburger"></span>
+            </button>
             <ul class="nav-links">
                 <li><a href="#" class="active" data-page="dashboard"><i class="fas fa-home"></i> Home</a></li>
                 <li><a href="#" data-page="people"><i class="fas fa-users"></i> People</a></li>
                 <li><a href="#" data-page="expenses"><i class="fas fa-receipt"></i> Expenses</a></li>
                 <li><a href="#" data-page="summary"><i class="fas fa-chart-pie"></i> Summary</a></li>
                 <li><a href="#" data-page="settings"><i class="fas fa-cog"></i> Settings</a></li>
+                <li><a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
             </ul>
         </nav>
 

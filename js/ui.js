@@ -185,5 +185,12 @@ const UI = {
             month: 'short',
             day: 'numeric'
         });
+    },
+
+    // Escape HTML to prevent XSS attacks
+    escapeHTML(str) {
+        const div = document.createElement('div');
+        div.appendChild(document.createTextNode(str));
+        return div.innerHTML;
     }
 };

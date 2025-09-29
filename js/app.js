@@ -578,12 +578,15 @@ const App = {
             const balanceClass = balance >= 0 ? 'positive' : 'negative';
             const balanceText = balance >= 0 ? `Gets back $${balance.toFixed(2)}` : `Owes $${Math.abs(balance).toFixed(2)}`;
 
+            const safeName = UI.escapeHTML(person.name);
+            const safeEmoji = UI.escapeHTML(person.emoji);
+
             const personCard = document.createElement('div');
             personCard.className = 'person-card';
             personCard.innerHTML = `
-                <div class="person-emoji">${person.emoji}</div>
+                <div class="person-emoji">${safeEmoji}</div>
                 <div class="person-info">
-                    <h3>${person.name}</h3>
+                    <h3>${safeName}</h3>
                     <div class="person-balance ${balanceClass}">${balanceText}</div>
                 </div>
                 <div class="person-actions">
@@ -593,12 +596,12 @@ const App = {
 
             const option = document.createElement('option');
             option.value = person.id;
-            option.textContent = `${person.emoji} ${person.name}`;
+            option.textContent = `${safeEmoji} ${safeName}`;
             expensePayer.appendChild(option);
 
             const checkboxItem = document.createElement('div');
             checkboxItem.className = 'checkbox-item';
-            checkboxItem.innerHTML = `<input type="checkbox" id="split-person-${person.id}" value="${person.id}" checked><label for="split-person-${person.id}">${person.emoji} ${person.name}</label>`;
+            checkboxItem.innerHTML = `<input type="checkbox" id="split-person-${person.id}" value="${person.id}" checked><label for="split-person-${person.id}">${safeEmoji} ${safeName}</label>`;
             expenseSplitPeople.appendChild(checkboxItem);
         });
 
@@ -623,14 +626,18 @@ const App = {
             const payer = this.data.people.find(p => p.id === expense.payerId);
             if (!payer) return;
 
+            const safeDescription = UI.escapeHTML(expense.description);
+            const safePayerName = UI.escapeHTML(payer.name);
+            const safePayerEmoji = UI.escapeHTML(payer.emoji);
+
             const expenseItem = document.createElement('div');
             expenseItem.className = 'expense-item';
             // ... (HTML generation for expense item)
             expenseItem.innerHTML = `
                 <div class="expense-icon"><i class="fas fa-receipt"></i></div>
                 <div class="expense-details">
-                    <h3>${expense.description}</h3>
-                    <p>Paid by ${payer.emoji} ${payer.name}</p>
+                    <h3>${safeDescription}</h3>
+                    <p>Paid by ${safePayerEmoji} ${safePayerName}</p>
                 </div>
                 <div class="expense-amount">$${expense.amount.toFixed(2)}</div>
                 <div class="expense-actions">
@@ -658,13 +665,16 @@ const App = {
         recentExpenses.forEach(expense => {
             const payer = this.data.people.find(p => p.id === expense.payerId);
             if (!payer) return;
+            const safeDescription = UI.escapeHTML(expense.description);
+            const safePayerName = UI.escapeHTML(payer.name);
+
             const expenseCard = document.createElement('div');
             expenseCard.className = 'expense-card';
             expenseCard.innerHTML = `
                 <div class="card-icon">💰</div>
                 <div class="card-details">
-                    <span class="card-description">${expense.description}</span>
-                    <span class="card-payer">Paid by ${payer.name}</span>
+                    <span class="card-description">${safeDescription}</span>
+                    <span class="card-payer">Paid by ${safePayerName}</span>
                 </div>
                 <div class="card-amount">$${expense.amount.toFixed(2)}</div>
             `;
@@ -745,10 +755,15 @@ const App = {
             settlements.forEach(s => {
                 const settlementItem = document.createElement('div');
                 settlementItem.className = 'settlement-item';
+                const safeFromName = UI.escapeHTML(s.from.name);
+                const safeFromEmoji = UI.escapeHTML(s.from.emoji);
+                const safeToName = UI.escapeHTML(s.to.name);
+                const safeToEmoji = UI.escapeHTML(s.to.emoji);
+
                 settlementItem.innerHTML = `
-                    <span class="settlement-from">${s.from.emoji} ${s.from.name}</span>
+                    <span class="settlement-from">${safeFromEmoji} ${safeFromName}</span>
                     <span class="settlement-arrow">→</span>
-                    <span class="settlement-to">${s.to.emoji} ${s.to.name}</span>
+                    <span class="settlement-to">${safeToEmoji} ${safeToName}</span>
                     <span class="settlement-amount">$${s.amount.toFixed(2)}</span>
                 `;
                 settlementSummary.appendChild(settlementItem);

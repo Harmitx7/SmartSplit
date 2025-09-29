@@ -17,60 +17,53 @@
     <div class="container">
         <h1>Smart Split Database Setup</h1>
         <?php
-        // Include the database configuration
-        require_once 'php/db.php';
+        // Database configuration for initial setup (no database selected yet)
+        $servername = "localhost";
+        $username = "root";
+        $password = "";
+        $dbname = "smart_split";
 
-        echo "<p>Attempting to connect to the database '<strong>" . $dbname . "</strong>' on host '<strong>" . $servername . "</strong>'...</p>";
+        // Create connection to MySQL server
+        $conn = new mysqli($servername, $username, $password);
 
-        // The connection is already established in db.php. We just check if it was successful.
+        // Check connection
         if ($conn->connect_error) {
-            echo "<div class='message error'><strong>Connection Failed:</strong> " . $conn->connect_error . ". Please check your credentials in <code>php/db.php</code>.</div>";
-        } else {
-            echo "<div class='message success'><strong>Success!</strong> Database connection is working.</div>";
-
-            // SQL to create 'people' table
-            $sql_people = "
-            CREATE TABLE IF NOT EXISTS `people` (
-              `id` int(11) NOT NULL AUTO_INCREMENT,
-              `name` varchar(255) NOT NULL,
-              `emoji` varchar(16) NOT NULL,
-              PRIMARY KEY (`id`)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
-
-            // SQL to create 'expenses' table
-            $sql_expenses = "
-            CREATE TABLE IF NOT EXISTS `expenses` (
-              `id` int(11) NOT NULL AUTO_INCREMENT,
-              `description` varchar(255) NOT NULL,
-              `amount` decimal(10,2) NOT NULL,
-              `payerId` int(11) NOT NULL,
-              `date` date NOT NULL,
-              `category` varchar(100) NOT NULL,
-              `splitBetween` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
-              `splitAmount` decimal(10,2) NOT NULL,
-              `timestamp` bigint(20) NOT NULL,
-              PRIMARY KEY (`id`),
-              KEY `payerId` (`payerId`),
-              CONSTRAINT `expenses_ibfk_1` FOREIGN KEY (`payerId`) REFERENCES `people` (`id`) ON DELETE CASCADE
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
-
-            echo "<h2>Creating Tables...</h2>";
-
-            // Execute queries
-            if ($conn->query($sql_people) === TRUE) {
-                echo "<div class='message success'>Table '<strong>people</strong>' created successfully or already exists.</div>";
-            } else {
-                echo "<div class='message error'><strong>Error creating table 'people':</strong> " . $conn->error . "</div>";
-            }
-
-            if ($conn->query($sql_expenses) === TRUE) {
-                echo "<div class='message success'>Table '<strong>expenses</strong>' created successfully or already exists.</div>";
-            } else {
-                echo "<div class='message error'><strong>Error creating table 'expenses':</strong> " . $conn->error . "</div>";
-            }
-
-            echo "<h3>Setup is complete. You can now use the application.</h3>";
+            die("<div class='message error'><strong>Connection Failed:</strong> " . $conn->connect_error . ". Please check your MySQL server credentials.</div>");
         }
+
+        // Create database if it doesn't exist
+        $sql_create_db = "CREATE DATABASE IF NOT EXISTS `$dbname` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci";
+        if ($conn->query($sql_create_db) === TRUE) {
+            echo "<div class='message success'>Database '<strong>$dbname</strong>' created successfully or already exists.</div>";
+        } else {
+            die("<div class='message error'><strong>Error creating database:</strong> " . $conn->error . "</div>");
+        }
+
+        // Select the database
+        $conn->select_db($dbname);
+
+        echo "<p>Reading SQL setup file from <code>setup.sql</code>...</p>";
+
+        // Read the SQL file
+        $sql_script = file_get_contents('setup.sql');
+        if ($sql_script === false) {
+            die("<div class='message error'><strong>Error:</strong> Could not read <code>setup.sql</code>. Make sure the file exists in the same directory.</div>");
+        }
+
+        // Execute the multi-query SQL script
+        if ($conn->multi_query($sql_script)) {
+            do {
+                // Store first result set
+                if ($result = $conn->store_result()) {
+                    $result->free();
+                }
+            } while ($conn->next_result());
+            echo "<div class='message success'><strong>Success!</strong> All tables from <code>setup.sql</code> were created successfully.</div>";
+        } else {
+            echo "<div class='message error'><strong>Error executing SQL script:</strong> " . $conn->error . "</div>";
+        }
+
+        echo "<h3>Setup is complete. You can now use the application.</h3>";
 
         // Close the connection
         $conn->close();

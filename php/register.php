@@ -8,7 +8,7 @@ $input = json_decode(file_get_contents('php://input'), true);
 if (isset($input['username']) && isset($input['password']) && isset($input['email'])) {
     $username = $conn->real_escape_string($input['username']);
     $email = $conn->real_escape_string($input['email']);
-    $password = password_hash($conn->real_escape_string($input['password']), PASSWORD_BCRYPT);
+    $password = password_hash($input['password'], PASSWORD_BCRYPT);
 
     // Check if username or email already exists
     $stmt = $conn->prepare("SELECT id FROM users WHERE username = ? OR email = ?");

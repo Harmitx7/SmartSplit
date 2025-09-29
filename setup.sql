@@ -54,6 +54,6 @@ CREATE TABLE `expenses` (
   PRIMARY KEY (`id`),
   KEY `payerId` (`payerId`),
   KEY `userId` (`userId`),
-  CONSTRAINT `expenses_ibfk_1` FOREIGN KEY (`payerId`) REFERENCES `people` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `expenses_ibfk_1` FOREIGN KEY (`payerId`) REFERENCES `people` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `expenses_ibfk_2` FOREIGN KEY (`userId`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

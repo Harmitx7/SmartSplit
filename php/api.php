@@ -8,9 +8,8 @@ header('Content-Type: application/json');
 // Check authentication for all actions except for a dedicated auth-check action
 $action = isset($_GET['action']) ? $_GET['action'] : '';
 
-// Allow unauthenticated access only for 'check_auth' GET requests.
-// For all other requests, enforce authentication.
-if ($action !== 'check_auth' && $_SERVER['REQUEST_METHOD'] === 'GET') {
+// All actions require authentication except for 'check_auth'
+if ($action !== 'check_auth') {
     if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
         http_response_code(401); // Unauthorized
         echo json_encode(['error' => 'User not authenticated.']);
@@ -149,8 +148,8 @@ function add_person($conn, $data, $userId) {
         return;
     }
 
-    $name = $conn->real_escape_string($data['name']);
-    $emoji = $conn->real_escape_string($data['emoji']);
+    $name = $data['name'];
+    $emoji = $data['emoji'];
 
     $stmt = $conn->prepare("INSERT INTO people (name, emoji, userId) VALUES (?, ?, ?)");
     $stmt->bind_param("ssi", $name, $emoji, $userId);
@@ -160,20 +159,20 @@ function add_person($conn, $data, $userId) {
         echo json_encode(['id' => $new_id, 'name' => $data['name'], 'emoji' => $data['emoji']]);
     } else {
         http_response_code(500);
-        echo json_encode(['error' => 'Error adding person: ' . $stmt->error]);
+        echo json_encode(['error' => 'Could not add person due to a server error.']);
     }
     $stmt->close();
 }
 
 function add_expense($conn, $data, $userId) {
-    $description = $conn->real_escape_string($data['description']);
+    $description = $data['description'];
     $amount = (float)$data['amount'];
     $payerId = (int)$data['payerId'];
-    $date = $conn->real_escape_string($data['date']);
-    $category = $conn->real_escape_string($data['category']);
+    $date = $data['date'];
+    $category = $data['category'];
     $splitBetween = json_encode($data['splitBetween']);
     $splitAmount = (float)$data['splitAmount'];
-    $timestamp = $conn->real_escape_string($data['timestamp']);
+    $timestamp = $data['timestamp'];
 
     $stmt = $conn->prepare("INSERT INTO expenses (description, amount, payerId, date, category, splitBetween, splitAmount, timestamp, userId) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
     $stmt->bind_param("sdisssdsi", $description, $amount, $payerId, $date, $category, $splitBetween, $splitAmount, $timestamp, $userId);
@@ -185,7 +184,7 @@ function add_expense($conn, $data, $userId) {
         echo json_encode($data);
     } else {
         http_response_code(500);
-        echo json_encode(['error' => 'Error adding expense: ' . $stmt->error]);
+        echo json_encode(['error' => 'Could not add expense due to a server error.']);
     }
     $stmt->close();
 }
@@ -196,8 +195,8 @@ function update_person($conn, $id, $data, $userId) {
         echo json_encode(['error' => 'Invalid ID for update']);
         return;
     }
-    $name = $conn->real_escape_string($data['name']);
-    $emoji = $conn->real_escape_string($data['emoji']);
+    $name = $data['name'];
+    $emoji = $data['emoji'];
 
     $stmt = $conn->prepare("UPDATE people SET name = ?, emoji = ? WHERE id = ? AND userId = ?");
     $stmt->bind_param("ssii", $name, $emoji, $id, $userId);
@@ -206,7 +205,7 @@ function update_person($conn, $id, $data, $userId) {
         echo json_encode(['success' => true]);
     } else {
         http_response_code(500);
-        echo json_encode(['error' => 'Error updating person: ' . $stmt->error]);
+        echo json_encode(['error' => 'Could not update person due to a server error.']);
     }
     $stmt->close();
 }
@@ -225,7 +224,7 @@ function delete_person($conn, $id, $userId) {
         echo json_encode(['success' => true]);
     } else {
         http_response_code(500);
-        echo json_encode(['error' => 'Error deleting person: ' . $stmt->error]);
+        echo json_encode(['error' => 'Could not delete person due to a server error.']);
     }
     $stmt->close();
 }
@@ -236,11 +235,11 @@ function update_expense($conn, $id, $data, $userId) {
         echo json_encode(['error' => 'Invalid ID for update']);
         return;
     }
-    $description = $conn->real_escape_string($data['description']);
+    $description = $data['description'];
     $amount = (float)$data['amount'];
     $payerId = (int)$data['payerId'];
-    $date = $conn->real_escape_string($data['date']);
-    $category = $conn->real_escape_string($data['category']);
+    $date = $data['date'];
+    $category = $data['category'];
     $splitBetween = json_encode($data['splitBetween']);
     $splitAmount = (float)$data['splitAmount'];
 
@@ -251,7 +250,7 @@ function update_expense($conn, $id, $data, $userId) {
         echo json_encode(['success' => true]);
     } else {
         http_response_code(500);
-        echo json_encode(['error' => 'Error updating expense: ' . $stmt->error]);
+        echo json_encode(['error' => 'Could not update expense due to a server error.']);
     }
     $stmt->close();
 }
@@ -270,7 +269,7 @@ function delete_expense($conn, $id, $userId) {
         echo json_encode(['success' => true]);
     } else {
         http_response_code(500);
-        echo json_encode(['error' => 'Error deleting expense: ' . $stmt->error]);
+        echo json_encode(['error' => 'Could not delete expense due to a server error.']);
     }
     $stmt->close();
 }
@@ -282,30 +281,31 @@ function settle_all($conn, $userId) {
         echo json_encode(['success' => true]);
     } else {
         http_response_code(500);
-        echo json_encode(['error' => 'Error clearing expenses: ' . $conn->error]);
+        echo json_encode(['error' => 'Could not settle all expenses due to a server error.']);
     }
     $stmt->close();
 }
 
 function clear_all_data($conn, $userId) {
-    $stmt = $conn->prepare("DELETE FROM people WHERE userId = ?");
-    $stmt->bind_param("i", $userId);
-    if ($stmt->execute()) {
-        // Now delete expenses associated with this user
-        $stmt2 = $conn->prepare("DELETE FROM expenses WHERE userId = ?");
+    $conn->begin_transaction();
+    try {
+        $stmt1 = $conn->prepare("DELETE FROM expenses WHERE userId = ?");
+        $stmt1->bind_param("i", $userId);
+        $stmt1->execute();
+        $stmt1->close();
+
+        $stmt2 = $conn->prepare("DELETE FROM people WHERE userId = ?");
         $stmt2->bind_param("i", $userId);
-        if ($stmt2->execute()) {
-            echo json_encode(['success' => true]);
-        } else {
-            http_response_code(500);
-            echo json_encode(['error' => 'Error clearing expenses data: ' . $conn->error]);
-        }
+        $stmt2->execute();
         $stmt2->close();
-    } else {
+
+        $conn->commit();
+        echo json_encode(['success' => true]);
+    } catch (Exception $e) {
+        $conn->rollback();
         http_response_code(500);
-        echo json_encode(['error' => 'Error clearing people data: ' . $conn->error]);
+        echo json_encode(['error' => 'Could not clear all data due to a server error.']);
     }
-    $stmt->close();
 }
 
 function import_data($conn, $data, $userId) {

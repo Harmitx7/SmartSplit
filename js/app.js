@@ -185,11 +185,18 @@ const App = {
     setupEventListeners() {
         // ... (event listeners remain mostly the same)
         // Navigation
+        const mainNav = document.querySelector('.main-nav');
         document.querySelectorAll('.nav-links a').forEach(link => {
             link.addEventListener('click', (e) => {
                 e.preventDefault();
                 const page = link.getAttribute('data-page');
-                if (page) UI.showPage(page);
+                if (page) {
+                    UI.showPage(page);
+                    // Close the mobile nav on link click
+                    if (mainNav.classList.contains('nav-open')) {
+                        mainNav.classList.remove('nav-open');
+                    }
+                }
             });
         });
 
@@ -259,9 +266,8 @@ const App = {
         const navToggle = document.querySelector('.nav-toggle');
         if (navToggle) {
             navToggle.addEventListener('click', () => {
-                const navLinks = document.querySelector('.nav-links');
-                navLinks.classList.toggle('nav-open');
-                navToggle.classList.toggle('nav-open');
+                const mainNav = document.querySelector('.main-nav');
+                mainNav.classList.toggle('nav-open');
             });
         }
     },

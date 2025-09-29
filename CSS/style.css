@@ -811,16 +811,16 @@ input:focus, select:focus, textarea:focus {
     bottom: -8px;
 }
 
-.nav-open .hamburger {
+.main-nav.nav-open .hamburger {
     background: transparent;
 }
 
-.nav-open .hamburger::before {
+.main-nav.nav-open .hamburger::before {
     transform: rotate(45deg);
     top: 0;
 }
 
-.nav-open .hamburger::after {
+.main-nav.nav-open .hamburger::after {
     transform: rotate(-45deg);
     top: 0;
 }
@@ -861,9 +861,10 @@ input:focus, select:focus, textarea:focus {
         box-shadow: var(--shadow-lg);
         border-radius: var(--radius-lg);
         animation: fadeInDown 0.3s ease-out;
+        z-index: 1000;
     }
 
-    .nav-links.nav-open {
+    .main-nav.nav-open .nav-links {
         display: flex;
     }
 

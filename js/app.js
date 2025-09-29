@@ -278,7 +278,9 @@ const App = {
     async logout() {
         if (this.storageMode !== 'php') return;
         try {
-            const response = await fetch('php/api.php?action=logout');
+            const response = await fetch('php/api.php?action=logout', {
+                method: 'POST'
+            });
             const data = await response.json();
             if (data.success) {
                 sessionStorage.removeItem('username');
@@ -286,6 +288,7 @@ const App = {
             }
         } catch (error) {
             console.error('Logout failed:', error);
+            // Still redirect to login page on failure to avoid being stuck
             window.location.href = 'login.html';
         }
     },

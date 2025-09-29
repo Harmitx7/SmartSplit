@@ -21,24 +21,34 @@
 </head>
 <body>
     <script>
-        // Redirect to login if not authenticated
+        // Pre-flight check for authentication.
+        // This script runs before the main app to handle redirection for non-authenticated users
+        // without flashing the main app content first.
         fetch('php/api.php?action=check_auth')
             .then(response => {
                 if (!response.ok) {
-                    window.location.href = 'login.html';
+                    // If the server response is not OK (e.g., 500 error),
+                    // we'll let the main app handle it as an offline mode scenario.
+                    // We throw an error to skip to the .catch block.
+                    throw new Error('Server error during pre-flight auth check.');
                 }
                 return response.json();
             })
             .then(data => {
                 if (!data.loggedin) {
+                    // If the backend is working but the user is not logged in, redirect to login page.
                     window.location.href = 'login.html';
                 } else {
+                    // If logged in, store the username. The main app will display it.
                     sessionStorage.setItem('username', data.username);
-                    document.getElementById('username-display').textContent = data.username;
                 }
             })
-            .catch(() => {
-                window.location.href = 'login.html';
+            .catch(error => {
+                // If the fetch fails (e.g., network error, backend is down) or if we threw an error above,
+                // we catch it here. We do NOT redirect. Instead, we let the page load.
+                // The main App.js script will then detect that the backend is unavailable
+                // and switch to local storage mode.
+                console.warn('Pre-flight auth check failed. The app will attempt to load in offline mode.', error.message);
             });
     </script>
     <div class="app-container">
@@ -320,6 +330,7 @@
     
     <!-- Custom JavaScript -->
     <script src="js/sounds.js"></script>
+    <script src="js/localstorage.js"></script>
     <script src="js/app.js"></script>
     <script src="js/ui.js"></script>
     <script src="js/data.js"></script>

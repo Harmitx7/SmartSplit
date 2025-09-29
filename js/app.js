@@ -25,6 +25,7 @@ const App = {
     },
     storageMode: 'php', // 'php' or 'local'
     phpAvailable: true,
+    summaryChart: null, // To hold the chart instance
 
     // Initialize the app
     async init() {
@@ -83,7 +84,8 @@ const App = {
     setupLocalModeUI() {
         const userInfo = document.querySelector('.user-info');
         if (userInfo) {
-            userInfo.innerHTML = 'Welcome, Guest (Offline Mode)';
+            // Add a more prominent offline indicator
+            userInfo.innerHTML = 'Welcome, Guest <span class="offline-badge">Offline</span>';
         }
 
         const logoutBtn = document.getElementById('logout-btn');
@@ -656,12 +658,86 @@ const App = {
 
     renderSummary() {
         const settlementSummary = document.getElementById('settlement-summary');
+        const chartContainer = document.querySelector('.summary-chart-container');
+        const chartCanvas = document.getElementById('summary-chart');
+
+        // Always clear previous state
         settlementSummary.innerHTML = '';
+        if (this.summaryChart) {
+            this.summaryChart.destroy();
+            this.summaryChart = null;
+        }
+
+        // Handle empty state for both chart and settlements
         if (this.data.expenses.length === 0) {
             settlementSummary.innerHTML = `<div class="empty-state"><i class="fas fa-check-circle fa-3x"></i><p>All settled up!</p></div>`;
+            if (chartContainer) {
+                chartContainer.style.display = 'none';
+            }
             return;
         }
-        // ... (Summary and settlement calculation logic, remains the same)
+
+        // Show chart container if there are expenses
+        if (chartContainer) {
+            chartContainer.style.display = 'block';
+        }
+
+        // 1. Render Chart if canvas exists
+        if (chartCanvas) {
+            const stats = Data.getExpenseStats(this.data.people, this.data.expenses);
+            const categoryData = {
+                labels: Object.keys(stats.expensesByCategory).map(key => key.charAt(0).toUpperCase() + key.slice(1)),
+                datasets: [{
+                    data: Object.values(stats.expensesByCategory).map(cat => cat.total),
+                    backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'],
+                    hoverOffset: 4
+                }]
+            };
+
+            this.summaryChart = new Chart(chartCanvas, {
+                type: 'pie',
+                data: categoryData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        title: {
+                            display: true,
+                            text: 'Expenses by Category',
+                            font: {
+                                size: 16
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 2. Render Settlements
+        const settlements = Data.calculateSettlements(this.data.people, this.data.expenses);
+        if (settlements.length === 0) {
+            // If there are expenses but no settlements, it means everything is balanced.
+            settlementSummary.innerHTML = `<div class="empty-state"><i class="fas fa-check-circle fa-3x"></i><p>Balances are all even!</p></div>`;
+        } else {
+            const summaryTitle = document.createElement('h2');
+            summaryTitle.textContent = 'Who Owes Whom';
+            settlementSummary.appendChild(summaryTitle);
+
+            settlements.forEach(s => {
+                const settlementItem = document.createElement('div');
+                settlementItem.className = 'settlement-item';
+                settlementItem.innerHTML = `
+                    <span class="settlement-from">${s.from.emoji} ${s.from.name}</span>
+                    <span class="settlement-arrow">→</span>
+                    <span class="settlement-to">${s.to.emoji} ${s.to.name}</span>
+                    <span class="settlement-amount">$${s.amount.toFixed(2)}</span>
+                `;
+                settlementSummary.appendChild(settlementItem);
+            });
+        }
     },
 
     updateTotalBalance() {

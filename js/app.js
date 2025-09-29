@@ -640,7 +640,17 @@ const App = {
         recentExpenses.forEach(expense => {
             const payer = this.data.people.find(p => p.id === expense.payerId);
             if (!payer) return;
-            // ... (HTML generation for recent expense card)
+            const expenseCard = document.createElement('div');
+            expenseCard.className = 'expense-card';
+            expenseCard.innerHTML = `
+                <div class="card-icon">💰</div>
+                <div class="card-details">
+                    <span class="card-description">${expense.description}</span>
+                    <span class="card-payer">Paid by ${payer.name}</span>
+                </div>
+                <div class="card-amount">$${expense.amount.toFixed(2)}</div>
+            `;
+            recentExpensesList.appendChild(expenseCard);
         });
     },
 

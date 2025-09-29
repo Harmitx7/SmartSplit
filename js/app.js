@@ -307,8 +307,14 @@ const App = {
         const name = nameInput.value.trim();
         const emoji = emojiInput.value;
 
-        if (name === '') { /* validation */ return; }
-        if (this.data.people.some(p => p.name.toLowerCase() === name.toLowerCase())) { /* validation */ return; }
+        if (name === '') {
+            Swal.fire('Oops!', 'Person name cannot be empty.', 'error');
+            return;
+        }
+        if (this.data.people.some(p => p.name.toLowerCase() === name.toLowerCase())) {
+            Swal.fire('Oops!', `A person named "${name}" already exists.`, 'error');
+            return;
+        }
 
         const newPersonData = { name, emoji };
 
@@ -320,7 +326,17 @@ const App = {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(newPersonData),
                 });
-                if (!response.ok) throw new Error('Server error');
+                if (!response.ok) {
+                    let errorMessage = 'An unknown server error occurred.';
+                    try {
+                        const errorData = await response.json();
+                        errorMessage = errorData.error || `Server responded with status ${response.status}.`;
+                    } catch (e) {
+                        // Response was not JSON or was empty
+                        errorMessage = `Server responded with status ${response.status}.`;
+                    }
+                    throw new Error(errorMessage);
+                }
                 savedPerson = await response.json();
                 savedPerson.id = parseInt(savedPerson.id);
                 savedPerson.totalPaid = 0;
@@ -338,7 +354,7 @@ const App = {
             Swal.fire('Person Added!', `${name} has been added.`, 'success');
         } catch (error) {
             console.error('Error adding person:', error);
-            Swal.fire('Error!', 'Could not add person.', 'error');
+            Swal.fire('Error!', `Could not add person. ${error.message}`, 'error');
         }
     },
 

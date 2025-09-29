@@ -7,11 +7,17 @@ header('Content-Type: application/json');
 
 // Check authentication for all actions except for a dedicated auth-check action
 $action = isset($_GET['action']) ? $_GET['action'] : '';
-if ($action !== 'check_auth' && (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true)) {
-    http_response_code(401); // Unauthorized
-    echo json_encode(['error' => 'User not authenticated.']);
-    exit();
+
+// Allow unauthenticated access only for 'check_auth' GET requests.
+// For all other requests, enforce authentication.
+if ($action !== 'check_auth' && $_SERVER['REQUEST_METHOD'] === 'GET') {
+    if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
+        http_response_code(401); // Unauthorized
+        echo json_encode(['error' => 'User not authenticated.']);
+        exit();
+    }
 }
+
 $userId = isset($_SESSION['userId']) ? $_SESSION['userId'] : 0;
 
 // Get request details
@@ -39,10 +45,11 @@ function handle_get($conn, $action, $userId) {
     if ($action == 'get_data') {
         get_all_data($conn, $userId);
     } else if ($action == 'check_auth') {
-        echo json_encode(['loggedin' => true, 'username' => $_SESSION['username']]);
-    } else if ($action == 'logout') {
-        session_destroy();
-        echo json_encode(['success' => true]);
+        if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
+            echo json_encode(['loggedin' => true, 'username' => $_SESSION['username']]);
+        } else {
+            echo json_encode(['loggedin' => false]);
+        }
     } else {
         http_response_code(400);
         echo json_encode(['error' => 'Invalid GET action']);
@@ -51,6 +58,13 @@ function handle_get($conn, $action, $userId) {
 
 // Handle POST requests
 function handle_post($conn, $action, $id, $data, $userId) {
+    // For POST actions, userId must be valid, except for login/register
+    if ($userId <= 0 && !in_array($action, ['login', 'register'])) {
+        http_response_code(401);
+        echo json_encode(['error' => 'User not authenticated for this action.']);
+        return;
+    }
+
     switch ($action) {
         case 'add_person':
             add_person($conn, $data, $userId);
@@ -59,25 +73,29 @@ function handle_post($conn, $action, $id, $data, $userId) {
             add_expense($conn, $data, $userId);
             break;
         case 'update_person':
-            update_person($conn, $id, $data);
+            update_person($conn, $id, $data, $userId);
             break;
         case 'delete_person':
-            delete_person($conn, $id);
+            delete_person($conn, $id, $userId);
             break;
         case 'update_expense':
-            update_expense($conn, $id, $data);
+            update_expense($conn, $id, $data, $userId);
             break;
         case 'delete_expense':
-            delete_expense($conn, $id);
+            delete_expense($conn, $id, $userId);
             break;
         case 'settle_all':
-            settle_all($conn);
+            settle_all($conn, $userId);
             break;
         case 'import_data':
-            import_data($conn, $data);
+            import_data($conn, $data, $userId);
             break;
         case 'clear_all':
-            clear_all_data($conn);
+            clear_all_data($conn, $userId);
+            break;
+        case 'logout':
+            session_destroy();
+            echo json_encode(['success' => true]);
             break;
         default:
             http_response_code(400);

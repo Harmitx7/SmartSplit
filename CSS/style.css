@@ -951,3 +951,16 @@ input:focus, select:focus, textarea:focus {
     0% { transform: translateY(-100px) rotate(0deg); }
     100% { transform: translateY(100vh) rotate(360deg); }
 }
+
+/* Offline Badge */
+.offline-badge {
+    background-color: var(--gray-dark);
+    color: white;
+    font-size: 0.75rem;
+    padding: 3px 8px;
+    border-radius: 12px;
+    margin-left: var(--spacing-sm);
+    font-weight: 600;
+    vertical-align: middle;
+    display: inline-block;
+}

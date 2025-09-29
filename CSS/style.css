@@ -774,6 +774,58 @@ input:focus, select:focus, textarea:focus {
     font-size: 2.5rem;
 }
 
+/* Hamburger Menu */
+.nav-toggle {
+    display: none;
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+    padding: 5px;
+}
+
+.hamburger {
+    display: block;
+    position: relative;
+    width: 25px;
+    height: 3px;
+    background: var(--dark);
+    transition: all 0.2s ease-in-out;
+}
+
+.hamburger::before,
+.hamburger::after {
+    content: '';
+    position: absolute;
+    height: 3px;
+    background: var(--dark);
+    right: 0;
+    left: 0;
+    transition: all 0.2s ease-in-out;
+}
+
+.hamburger::before {
+    top: -8px;
+}
+
+.hamburger::after {
+    bottom: -8px;
+}
+
+.nav-open .hamburger {
+    background: transparent;
+}
+
+.nav-open .hamburger::before {
+    transform: rotate(45deg);
+    top: 0;
+}
+
+.nav-open .hamburger::after {
+    transform: rotate(-45deg);
+    top: 0;
+}
+
+
 /* Responsive Styles */
 @media (max-width: 768px) {
     .app-container {
@@ -781,16 +833,50 @@ input:focus, select:focus, textarea:focus {
     }
     
     .main-nav {
-        flex-direction: column;
-        gap: var(--spacing-md);
-        padding: var(--spacing-md);
+        position: relative;
+    }
+
+    .user-info {
+        display: none; /* Hide user info on mobile nav bar to save space */
     }
     
+    .nav-toggle {
+        display: block;
+        position: absolute;
+        top: 25px;
+        right: var(--spacing-lg);
+        z-index: 1001;
+    }
+
     .nav-links {
+        display: none;
+        flex-direction: column;
+        position: absolute;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        top: 0;
+        left: 0;
+        right: 0;
+        padding: var(--spacing-xxl) var(--spacing-lg) var(--spacing-lg);
+        box-shadow: var(--shadow-lg);
+        border-radius: var(--radius-lg);
+        animation: fadeInDown 0.3s ease-out;
+    }
+
+    .nav-links.nav-open {
+        display: flex;
+    }
+
+    @keyframes fadeInDown {
+        from { opacity: 0; transform: translateY(-15px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .nav-links a {
         width: 100%;
-        overflow-x: auto;
-        padding-bottom: var(--spacing-sm);
         justify-content: center;
+        padding: var(--spacing-md);
+        font-size: 1.1rem;
     }
     
     .content {
@@ -806,8 +892,16 @@ input:focus, select:focus, textarea:focus {
         justify-content: center;
     }
     
-    .settings-options {
+    .settings-options, .people-list, .expense-cards {
         grid-template-columns: 1fr;
+    }
+
+    .balance-amount {
+        font-size: 2.4rem;
+    }
+
+    h1 {
+        font-size: 1.8rem;
     }
 }
 

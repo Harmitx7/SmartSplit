@@ -137,6 +137,18 @@ function get_all_data($conn, $userId) {
 }
 
 function add_person($conn, $data, $userId) {
+    // Input validation
+    if (!isset($data['name']) || trim($data['name']) === '') {
+        http_response_code(400); // Bad Request
+        echo json_encode(['error' => 'Person name is required.']);
+        return;
+    }
+    if (!isset($data['emoji']) || trim($data['emoji']) === '') {
+        http_response_code(400); // Bad Request
+        echo json_encode(['error' => 'Emoji is required.']);
+        return;
+    }
+
     $name = $conn->real_escape_string($data['name']);
     $emoji = $conn->real_escape_string($data['emoji']);
 
